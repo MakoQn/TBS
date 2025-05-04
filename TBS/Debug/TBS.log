@@ -1,0 +1,9 @@
+﻿  main.cpp
+D:\SFML-3.0.0\include\SFML\System\Exception.hpp(41,47): warning C4275: class "std::runtime_error", не являющийся dll-интерфейсом, использован в качестве базового для dll-интерфейса class "sf::Exception"
+  (компиляция исходного файла "main.cpp")
+      D:\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\stdexcept(100,19):
+       см. объявление "std::runtime_error"
+      D:\SFML-3.0.0\include\SFML\System\Exception.hpp(41,23):
+       см. объявление "sf::Exception"
+  
+  TBS.vcxproj -> D:\TBS\Debug\TBS.exe
