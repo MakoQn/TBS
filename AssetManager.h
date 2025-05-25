@@ -1,25 +1,29 @@
-#ifndef ASSETMANAGER_H
-#define ASSETMANAGER_H
+#pragma once
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Font.hpp>
 #include <map>
 #include <string>
 #include <memory>
 
 class AssetManager
 {
-public:
+private:
     AssetManager();
     ~AssetManager();
 
-    static sf::Texture& getTexture(const std::string& filename);
-    static sf::Font& getFont(const std::string& filename);
+    std::map<std::string, sf::Texture> textures;
+    static sf::Texture defaultTextureInstance;
+    static bool defaultTextureLoaded;
 
-private:
-    static std::map<std::string, std::unique_ptr<sf::Texture>> s_Textures;
-    static std::map<std::string, std::unique_ptr<sf::Font>> s_Fonts;
-    static sf::Font s_fallbackFont;
-    static bool s_fallbackFontLoaded;
+    void loadTexture(const std::string& name, const std::string& filename);
+    static void ensureDefaultTextureLoaded();
+public:
+    AssetManager(const AssetManager&) = delete;
+    AssetManager& operator=(const AssetManager&) = delete;
+
+    static AssetManager& getInstance();
+
+    sf::Texture& getTexture(const std::string& filename);
+    static sf::Texture& getDefaultTexture();
 };
-
-#endif

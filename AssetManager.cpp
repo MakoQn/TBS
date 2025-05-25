@@ -1,71 +1,88 @@
 #include "AssetManager.h"
+#include <SFML/Graphics/Image.hpp>
 #include <iostream>
 
-std::map<std::string, std::unique_ptr<sf::Texture>> AssetManager::s_Textures;
-std::map<std::string, std::unique_ptr<sf::Font>> AssetManager::s_Fonts;
-sf::Font AssetManager::s_fallbackFont;
-bool AssetManager::s_fallbackFontLoaded = false;
+sf::Texture AssetManager::defaultTextureInstance;
+bool AssetManager::defaultTextureLoaded = false;
+
+AssetManager& AssetManager::getInstance()
+{
+    static AssetManager instance;
+
+    ensureDefaultTextureLoaded();
+
+    return instance;
+}
 
 AssetManager::AssetManager()
 {
+    std::cout << "AssetManager создан." << std::endl;
 }
+
 AssetManager::~AssetManager()
 {
+    std::cout << "AssetManager уничтожен." << std::endl;
+
+    textures.clear();
 }
 
-sf::Texture& AssetManager::getTexture(const std::string& filename)
+void AssetManager::ensureDefaultTextureLoaded()
 {
-    auto found = s_Textures.find(filename);
-    if (found != s_Textures.end())
+    if (!defaultTextureLoaded)
     {
-        return *found->second;
-    }
-    else
-    {
-        auto texture = std::make_unique<sf::Texture>();
-        if (texture->loadFromFile(filename))
+        sf::Image image({8, 8}, sf::Color::Red);
+
+        if (defaultTextureInstance.loadFromImage(image))
         {
-            s_Textures[filename] = std::move(texture);
-            return *s_Textures[filename];
+            std::cout << "Стандартная текстура успешно создана." << std::endl;
         }
         else
         {
-            std::cerr << "Failed to load texture: " << filename << std::endl;
-            static sf::Texture errorTexture;
-            static bool errorTextureCreated = false;
-            if (!errorTextureCreated)
-            {
-                errorTexture.create(32, 32);
-                errorTextureCreated = true;
-            }
-            return errorTexture;
+            std::cerr << "Не удалось создать стандартную текстуру" << std::endl;
         }
+
+        defaultTextureLoaded = true;
     }
 }
 
-sf::Font& AssetManager::getFont(const std::string& filename)
+sf::Texture& AssetManager::getDefaultTexture()
 {
-    auto found = s_Fonts.find(filename);
-    if (found != s_Fonts.end())
+    ensureDefaultTextureLoaded();
+
+    return defaultTextureInstance;
+}
+
+void AssetManager::loadTexture(const std::string& name, const std::string& filename)
+{
+    sf::Texture tex;
+
+    if (tex.loadFromFile(filename))
     {
-        return *found->second;
+        textures[name] = tex;
+
+        std::cout << "Загружена текстура: " << filename << " как " << name << std::endl;
     }
     else
     {
-        auto font = std::make_unique<sf::Font>();
-        if (font->loadFromFile(filename))
-        {
-            s_Fonts[filename] = std::move(font);
-            return *s_Fonts[filename];
-        }
-        else
-        {
-            std::cerr << "Failed to load font: " << filename << std::endl;
-            if (!s_fallbackFontLoaded)
-            {
-                s_fallbackFontLoaded = true;
-            }
-            return s_fallbackFont;
-        }
+        std::cerr << "Не удалось загрузить текстуру: " << filename << std::endl;
+    }
+}
+
+sf::Texture& AssetManager::getTexture(const std::string& name)
+{
+    if (textures.find(name) == textures.end())
+    {
+        loadTexture(name, name);
+    }
+
+    if (textures.find(name) != textures.end())
+    {
+        return textures.at(name);
+    }
+    else
+    {
+        std::cerr << "Текстура '" << name << "' не найдена после попытки загрузки. Возвращается стандартная текстура." << std::endl;
+
+        return getDefaultTexture();
     }
 }
